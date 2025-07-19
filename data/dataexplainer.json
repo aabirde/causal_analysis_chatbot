@@ -1,0 +1,15 @@
+{
+  "date": "The recorded date of the business data point, typically in YYYY-MM-DD format. Serves as the primary temporal dimension for analyzing trends in advertising spend, sales performance, and revenue patterns over time.",
+  "totaladspend": "Total advertising expenditure across all channels for the given date. Represents the sum of DSPAdSpend and SPAdSpend, directly impacting operational costs and serving as a key driver for page views and sales volume.",
+  "dspadspend": "Advertising spend allocated to Demand Side Platform programmatic advertising. Forms part of TotalAdSpend and is used to calculate DSPAdSpendRatio, representing the programmatic portion of the advertising mix.",
+  "spadspend": "Advertising spend on Sponsored Products, likely marketplace-specific advertising. Complements DSPAdSpend in the total advertising budget and typically shows more direct attribution to sold units and revenue.",
+  "mediabuzzscore": "Metric measuring media attention, brand mentions, or social media engagement levels. Correlates with page views and indirectly influences sales through brand awareness, often elevated during shopping events regardless of direct ad spend.",
+  "pageviews": "Number of website or product page visits recorded for the date. Serves as a leading indicator for sales conversion and is positively influenced by advertising spend, media buzz, and shopping events.",
+  "unitprice": "Average selling price per unit for the specific product on the given date. Directly multiplies with sold units to calculate revenue and may be reduced during promotional shopping events to drive volume.",
+  "soldunits": "Number of product units sold on the recorded date. Combined with unit price to determine revenue and represents the conversion outcome from page views, advertising efforts, and market conditions.",
+  "revenue": "Total sales income calculated as SoldUnits multiplied by UnitPrice. Primary performance metric that reflects the effectiveness of advertising spend and serves as the basis for profit calculations.",
+  "operationalcost": "Total business expenses including advertising, production, fulfillment, and other operational costs. Includes TotalAdSpend as a major component and directly reduces profit when subtracted from revenue.",
+  "profit": "Net earnings calculated as Revenue minus OperationalCost. Key performance indicator that balances revenue generation against all business expenses, including advertising investment.",
+  "dspadspendratio": "Ratio of DSP advertising spend to total advertising spend, calculated as DSPAdSpend divided by TotalAdSpend. Indicates the strategic allocation between programmatic and sponsored product advertising channels.",
+  "productid": "Unique identifier for the specific product being tracked in the dataset. Determines product-specific metrics like unit price, sales volume, and profitability, enabling product-level performance analysis and comparison."
+}
