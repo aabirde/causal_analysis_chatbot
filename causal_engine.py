@@ -7,10 +7,35 @@ from causal_analysis_state import CausalAnalysisState
 from causal_workflow import create_causal_workflow
 import warnings
 warnings.filterwarnings('ignore')
+import networkx as nx
+
+
 
 class CausalAnalysisEngine:
     def __init__(self):
         self.workflow = create_causal_workflow()
+    
+    def d_separated(graph, X, Y, Z):
+        from itertools import product
+        X, Y, Z = list(X), list(Y), list(Z)
+        g_moral = nx.Graph()
+        g_moral.add_nodes_from(graph.nodes())
+        g_moral.add_edges_from(graph.to_undirected().edges())
+        
+        for node in graph.nodes():
+            parents = list(graph.predecessors(node))
+            for i in range(len(parents)):
+                for j in range(i + 1, len(parents)):
+                    g_moral.add_edge(parents[i], parents[j])
+        
+        g_moral.remove_nodes_from(Z)
+        
+        for x, y in product(X, Y):
+            if nx.has_path(g_moral, x, y):
+                return False
+        return True
+
+    nx.algorithms.d_separated = d_separated
     
     def load_and_preprocess_data(self, data: pd.DataFrame = None) -> pd.DataFrame:
         """Load and preprocess data - adapted from your existing function"""

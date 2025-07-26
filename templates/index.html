@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-chart-line"></i> Causal Analysis Dashboard</h1>
+            <p class="lead">Discover causal relationships in your data with advanced statistical methods</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Upload Data</h5>
+                    <p class="card-text">Start by uploading your CSV data file</p>
+                    <a href="{{ url_for('upload_page') }}" class="btn btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Query Analysis</h5>
+                    <p class="card-text">Ask business questions about your data</p>
+                    <a href="{{ url_for('query_page') }}" class="btn btn-success">Analyze</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">View Results</h5>
+                    <p class="card-text">Explore detailed analysis results</p>
+                    <a href="{{ url_for('results_page') }}" class="btn btn-info">Results</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-cog fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">Settings</h5>
+                    <p class="card-text">Configure advanced parameters</p>
+                    <a href="{{ url_for('settings_page') }}" class="btn btn-warning">Configure</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> How it Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-database fa-2x text-primary"></i>
+                            </div>
+                            <h6>1. Data Upload</h6>
+                            <p>Upload your CSV file or use sample data to get started with the analysis.</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-brain fa-2x text-success"></i>
+                            </div>
+                            <h6>2. AI Analysis</h6>
+                            <p>Our AI identifies variables and performs causal analysis using advanced statistical methods.</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                            </div>
+                            <h6>3. Business Insights</h6>
+                            <p>Get actionable business recommendations based on the causal relationships discovered.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

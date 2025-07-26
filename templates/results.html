@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Results Dashboard - Causal Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-bar"></i> Results Dashboard</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Analysis Query</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Query:</strong> {{ query }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h3>{{ "%.4f"|format(results.causal_estimate or 0) }}</h3>
+                <p>Causal Effect (ATE)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h3>
+                    {% if results.validation_results.ate_confidence_interval %}
+                        [{{ "%.3f"|format(results.validation_results.ate_confidence_interval.lower) }}, 
+                         {{ "%.3f"|format(results.validation_results.ate_confidence_interval.upper) }}]
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h3>
+                <p>Confidence Interval</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h3>{{ results.validation_results.sample_size or 0 }}</h3>
+                <p>Sample Size</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h3>{{ "%.4f"|format(results.validation_results.model_score or 0) }}</h3>
+                <p>Model Score</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualizations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Visualizations</h5>
+                </div>
+                <div class="card-body">
+                    {% if plots.feature_importance %}
+                        <div id="featureImportancePlot" class="mb-4"></div>
+                    {% endif %}
+                    
+                    {% if plots.scenario_analysis %}
+                        <div id="scenarioAnalysisPlot" class="mb-4"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario Analysis Table -->
+    {% if results.validation_results.scenario_analysis %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Scenario Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>New Treatment Value</th>
+                                    <th>Predicted Outcome</th>
+                                    <th>Outcome Change (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scenario, values in results.validation_results.scenario_analysis.items() %}
+                                <tr>
+                                    <td>{{ scenario }}</td>
+                                    <td>{{ "%.4f"|format(values.new_treatment_value or 0) }}</td>
+                                    <td>{{ "%.4f"|format(values.predicted_outcome_mean or 0) }}</td>
+                                    <td>{{ "%.2f"|format(values.outcome_change_percent or 0) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Insights -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Detailed Insights</h5>
+                </div>
+                <div class="card-body">
+                    {% if results.insights %}
+                        <div class="insights-content">
+                            {{ results.insights|safe }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No detailed insights available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistical Tests -->
+    {% if results.validation_results.statistical_tests %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Statistical Tests</h5>
+                </div>
+                <div class="card-body">
+                    {% for test_name, test_results in results.validation_results.statistical_tests.items() %}
+                        <h6>{{ test_name.replace('_', ' ').title() }}</h6>
+                        <div class="row mb-3">
+                            {% for key, value in test_results.items() %}
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5>{{ "%.4f"|format(value) }}</h5>
+                                            <p class="card-text">{{ key.replace('_', ' ').title() }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Export Results -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Export Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="/api/export_results" class="btn btn-outline-primary">
+                                <i class="fas fa-download"></i> Download Results as JSON
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/api/export_summary" class="btn btn-outline-success">
+                                <i class="fas fa-download"></i> Download Summary as CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<scripts>
+// Load Plotly.js
+// Render Plotly charts
+{% if plots.feature_importance %}
+    var featureImportanceData = {{ plots.feature_importance|safe }};
+    Plotly.newPlot('featureImportancePlot', featureImportanceData.data, featureImportanceData.layout);
+{% endif %}
+
+{% if plots.scenario_analysis %}
+    var scenarioAnalysisData = {{ plots.scenario_analysis|safe }};
+    Plotly.newPlot('scenarioAnalysisPlot', scenarioAnalysisData.data, scenarioAnalysisData.layout);
+{% endif %}
+
+// Format insights content
+document.addEventListener('DOMContentLoaded', function() {
+    const insightsContent = document.querySelector('.insights-content');
+    if (insightsContent) {
+        // Convert line breaks to proper HTML
+        insightsContent.innerHTML = insightsContent.innerHTML.replace(/\n/g, '<br>');
+    }
+});
+</script>
+{% endblock %}

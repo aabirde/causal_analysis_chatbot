@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Settings - Causal Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-cog"></i> Advanced Settings</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Model Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="primaryLLM" class="form-label">Primary LLM</label>
+                        <select class="form-select" id="primaryLLM">
+                            <option value="mistralai/Mistral-7B-Instruct-v0.2">Mistral 7B Instruct</option>
+                            <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="secondaryLLM" class="form-label">Secondary LLM</label>
+                        <select class="form-select" id="secondaryLLM">
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                            <option value="gpt-4">GPT-4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Analysis Parameters</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="randomForestEstimators" class="form-label">Random Forest Estimators</label>
+                        <input type="number" class="form-control" id="randomForestEstimators" 
+                               min="10" max="500" value="100" step="10">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ridgeAlpha" class="form-label">Ridge Alpha</label>
+                        <input type="number" class="form-control" id="ridgeAlpha" 
+                               min="0.001" max="10" value="0.1" step="0.001">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxControlVars" class="form-label">Max Control Variables</label>
+                        <input type="number" class="form-control" id="maxControlVars" 
+                               min="1" max="10" value="5" step="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>API Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="togetherApiKey" class="form-label">Together API Key</label>
+                                <input type="password" class="form-control" id="togetherApiKey" 
+                                       placeholder="Enter API key">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="openaiApiKey" class="form-label">OpenAI API Key</label>
+                                <input type="password" class="form-control" id="openaiApiKey" 
+                                       placeholder="Enter API key">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="googleApiKey" class="form-label">Google API Key</label>
+                                <input type="password" class="form-control" id="googleApiKey" 
+                                       placeholder="Enter API key">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Cache Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="enableLLMCaching" checked>
+                        <label class="form-check-label" for="enableLLMCaching">
+                            Enable LLM Caching
+                        </label>
+                    </div>
+                    <button class="btn btn-warning" onclick="clearCache()">
+                        <i class="fas fa-trash"></i> Clear Cache
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Session Management</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Clear all session data and uploaded files</p>
+                    <button class="btn btn-danger" onclick="clearSession()">
+                        <i class="fas fa-sign-out-alt"></i> Clear Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-success btn-lg" onclick="saveSettings()">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function clearCache() {
+    if (confirm('Are you sure you want to clear the cache?')) {
+        showAlert('success', 'Cache cleared successfully!');
+    }
+}
+
+function clearSession() {
+    if (confirm('Are you sure you want to clear all session data? This will remove uploaded files and analysis results.')) {
+        fetch('/api/clear_session')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Error: ' + error.message);
+        });
+    }
+}
+
+function saveSettings() {
+    // In a real implementation, you would save these settings to the backend
+    showAlert('success', 'Settings saved successfully!');
+}
+
+function showAlert(type, message) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const mainContent = document.querySelector('.main-content');
+    mainContent.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}<h5>Enter Your Business Question</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea 
+                            id="queryText" 
+                            class="form-control" 
+                            rows="4" 
+                            placeholder="e.g., What is the effect of square footage on house price?"
+                        ></textarea>
+                        <div class="form-text">Ask a business question about causal relationships in your data</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="confidenceLevel" class="form-label">Confidence Level</label>
+                            <input type="range" class="form-range" id="confidenceLevel" 
+                                   min="0.80" max="0.99" step="0.01" value="0.90">
+                            <div class="text-center">
+                                <span id="confidenceValue">0.90</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modelType" class="form-label">Model Type</label>
+                            <select class="form-select" id="modelType">
+                                <option value="linear">Linear</option>
+                                <option value="forest">Random Forest</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg" onclick="runAnalysis()">
+                        <i class="fas fa-play"></i> Run Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    

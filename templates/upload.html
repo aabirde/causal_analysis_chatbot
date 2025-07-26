@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Data Upload - Causal Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-upload"></i> Data Upload & Preview</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Upload CSV File</h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" onclick="document.getElementById('csvFile').click()">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p>Click to upload your CSV file</p>
+                        <small class="text-muted">Maximum file size: 16MB</small>
+                    </div>
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Upload Column Definitions (Optional)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" onclick="document.getElementById('jsonFile').click()">
+                        <i class="fas fa-file-code fa-3x text-muted mb-3"></i>
+                        <p>Upload column definitions JSON</p>
+                        <small class="text-muted">Maps columns to friendly descriptions</small>
+                    </div>
+                    <input type="file" id="jsonFile" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12 text-center">
+            <button class="btn btn-secondary" onclick="loadSampleData()">
+                <i class="fas fa-database"></i> Use Sample Data
+            </button>
+        </div>
+    </div>
+
+    <div id="dataPreview" class="row mt-4" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Data Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="dataSummary">
+                        <!-- Summary metrics will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p id="loadingText">Processing your data...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('csvFile').addEventListener('change', uploadFile);
+document.getElementById('jsonFile').addEventListener('change', uploadExplainer);
+
+function uploadFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    showLoading('Processing your CSV file...');
+
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showAlert('success', data.message);
+            displayDataSummary(data.data_info);
+        } else {
+            showAlert('danger', data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('danger', 'Error: ' + error.message);
+    });
+}
+
+function uploadExplainer(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/upload_explainer', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+        } else {
+            showAlert('danger', data.error);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', 'Error: ' + error.message);
+    });
+}
+
+function loadSampleData() {
+    showLoading('Loading sample data...');
+
+    fetch('/api/load_sample')
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showAlert('success', data.message);
+            displayDataSummary(data.data_info);
+        } else {
+            showAlert('danger', data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('danger', 'Error: ' + error.message);
+    });
+}
+
+function displayDataSummary(dataInfo) {
+    const summaryHtml = `
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h4>${dataInfo.shape ? dataInfo.shape[0] : dataInfo.shape}</h4>
+                <p>Total Rows</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h4>${dataInfo.columns}</h4>
+                <p>Total Columns</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h4>${dataInfo.missing_values}</h4>
+                <p>Missing Values</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h4><i class="fas fa-check"></i></h4>
+                <p>Data Loaded</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('dataSummary').innerHTML = summaryHtml;
+    document.getElementById('dataPreview').style.display = 'block';
+}
+
+function showLoading(text) {
+    document.getElementById('loadingText').textContent = text;
+    new bootstrap.Modal(document.getElementById('loadingModal')).show();
+}
+
+function hideLoading() {
+    bootstrap.Modal.getInstance(document.getElementById('loadingModal')).hide();
+}
+
+function showAlert(type, message) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at the top of the main content
+    const mainContent = document.querySelector('.main-content');
+    mainContent.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

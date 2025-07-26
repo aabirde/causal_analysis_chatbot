@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Query Analysis - Causal Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-search"></i> Query Analysis</h2>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Enter Your Business Question</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea 
+                            id="queryText" 
+                            class="form-control" 
+                            rows="4" 
+                            placeholder="e.g., What is the effect of square footage on house price?"
+                        ></textarea>
+                        <div class="form-text">Ask a business question about causal relationships in your data</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="confidenceLevel" class="form-label">Confidence Level</label>
+                            <input type="range" class="form-range" id="confidenceLevel" 
+                                   min="0.80" max="0.99" step="0.01" value="0.90">
+                            <div class="text-center">
+                                <span id="confidenceValue">0.90</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modelType" class="form-label">Model Type</label>
+                            <select class="form-select" id="modelType">
+                                <option value="linear">Linear</option>
+                                <option value="forest">Random Forest</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg" onclick="runAnalysis()" id="analyzeBtn">
+                        <i class="fas fa-play"></i> Run Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Available Columns</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if data_info.columns %}
+                            {% for column in data_info.columns %}
+                                <div class="col-12 mb-1">
+                                    <small class="text-muted">• {{ column }}</small>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No data loaded</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quickResults" class="row mt-4" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="quickResultsContent">
+                        <!-- Quick results will be inserted here -->
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('results_page') }}" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> View Detailed Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Analyzing your query...</p>
+                <p class="text-muted">This may take a few moments</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update confidence level display
+document.getElementById('confidenceLevel').addEventListener('input', function() {
+    document.getElementById('confidenceValue').textContent = this.value;
+});
+
+// Main analysis function
+function runAnalysis() {
+    console.log('runAnalysis() called'); // Debug log
+    
+    const query = document.getElementById('queryText').value.trim();
+    const confidenceLevel = parseFloat(document.getElementById('confidenceLevel').value);
+    const modelType = document.getElementById('modelType').value;
+    
+    console.log('Query:', query); // Debug log
+    console.log('Confidence Level:', confidenceLevel); // Debug log
+    console.log('Model Type:', modelType); // Debug log
+
+    // Validation
+    if (!query) {
+        showAlert('warning', 'Please enter a query.');
+        return;
+    }
+
+    if (query.length < 10) {
+        showAlert('warning', 'Please enter a more detailed query (at least 10 characters).');
+        return;
+    }
+
+    // Disable button and show loading
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+    // Show analysis modal
+    const modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+    modal.show();
+
+    // Prepare request data
+    const requestData = {
+        query: query,
+        confidence_level: confidenceLevel,
+        model_type: modelType
+    };
+
+    console.log('Sending request data:', requestData); // Debug log
+
+    // Make API request
+    fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status); // Debug log
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data); // Debug log
+        
+        // Hide analysis modal
+        modal.hide();
+        
+        // Re-enable button
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '<i class="fas fa-play"></i> Run Analysis';
+        
+        if (data.success) {
+            showAlert('success', data.message);
+            displayQuickResults(data.results);
+        } else {
+            showAlert('danger', data.error || 'Analysis failed');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error); // Debug log
+        
+        // Hide modal and re-enable button
+        modal.hide();
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '<i class="fas fa-play"></i> Run Analysis';
+        
+        showAlert('danger', 'Network error: ' + error.message);
+    });
+}
+
+function displayQuickResults(results) {
+    console.log('Displaying results:', results); // Debug log
+    
+    const resultsHtml = `
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h4>${results.causal_effect.toFixed(4)}</h4>
+                <p>Causal Effect</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h4>${results.sample_size}</h4>
+                <p>Sample Size</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h4>${results.model_score.toFixed(4)}</h4>
+                <p>Model Score</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('quickResultsContent').innerHTML = resultsHtml;
+    document.getElementById('quickResults').style.display = 'block';
+    
+    // Scroll to results
+    document.getElementById('quickResults').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showAlert(type, message) {
+    console.log('Showing alert:', type, message); // Debug log
+    
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const mainContent = document.querySelector('.main-content');
+    mainContent.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Scroll to top to show alert
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Auto-dismiss after 10 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 10000);
+}
+
+// Allow Enter key to submit
+document.getElementById('queryText').addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key === 'Enter') {
+        runAnalysis();
+    }
+});
+
+// Test function - you can call this from browser console
+window.testAnalysis = function() {
+    document.getElementById('queryText').value = 'What is the effect of square footage on house price?';
+    runAnalysis();
+};
+
+console.log('Query page JavaScript loaded successfully'); // Debug log
+</script>
+{% endblock %}
+
