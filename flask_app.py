@@ -249,7 +249,6 @@ def run_analysis():
         print(f"Confidence level: {confidence_level}")  # Debug log
         print(f"Model type: {model_type}")  # Debug log
         
-        # Validation
         if not query:
             return jsonify({'error': 'Please enter a query'}), 400
         
