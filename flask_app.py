@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash, make_response
+from flask_session import Session 
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -20,7 +21,8 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this to a secure random key
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -285,8 +287,6 @@ def run_analysis():
         
         print("Analysis completed successfully")  # Debug log
         print(f"Results keys: {list(results.keys()) if results else 'None'}")  # Debug log
-        
-        # Store results in session
         session['analysis_results'] = results
         session['current_query'] = query
         
@@ -335,7 +335,6 @@ def export_summary():
     """Export analysis summary as CSV"""
     if 'analysis_results' not in session:
         return jsonify({'error': 'No results to export'}), 400
-    
     results = session['analysis_results']
     validation_results = results.get('validation_results', {})
     query = session.get('current_query', '')
