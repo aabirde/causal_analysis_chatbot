@@ -61,7 +61,9 @@ This project is a web-based application that allows users to perform causal anal
     [http://127.0.0.1:5000](http://127.0.0.1:5000)
     ```
 
-1.  **Start the Flask server:**
+ ### Running the Application in Flask
+
+1.  **Start the Streamlit server:**
     ```bash
     streamlit run streamlit_app.py
     ```
