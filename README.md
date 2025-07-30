@@ -1,8 +1,8 @@
 # Causal Analysis Chatbot
 
-This project is a web-based application that allows users to perform causal analysis on their data. It provides a user-friendly interface to upload data, ask business questions in natural language, and receive detailed causal insights and visualizations.
+This project is a web-based application that allows users to perform causal analysis on their data. It provides a user-friendly interface to upload data, ask business questions in natural language, and receive detailed causal insights and visualizations. This project has compatibility in both Streamlit and Flask
 
-## 🚀 Features
+##  Features
 
 * **CSV Data Upload**: Users can upload their own data in CSV format.
 * **Sample Data**: A sample dataset is provided for demonstration purposes.
@@ -13,7 +13,7 @@ This project is a web-based application that allows users to perform causal anal
 * **Advanced Settings**: Users can configure advanced parameters for the analysis.
 * **Export Results**: Results can be exported in JSON and CSV formats.
 
-## ⚙️ How it Works
+##  How it Works
 
 1.  **Data Upload**: The user uploads a CSV file or chooses to use the sample data. The data is preprocessed to handle missing values and encode categorical variables.
 2.  **Query Analysis**: The user asks a business question. The application's AI identifies the treatment, outcome, and control variables from the query and the data.
@@ -21,12 +21,13 @@ This project is a web-based application that allows users to perform causal anal
 4.  **Insight Generation**: The results of the causal analysis are used to generate detailed insights and business recommendations.
 5.  **Results Dashboard**: The results are displayed in a user-friendly dashboard with charts and tables.
 
-## 🏁 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
 * Python 3.7+
 * Flask
+* Streamlit
 * Pandas
 * NumPy
 * Scikit-learn
@@ -48,7 +49,7 @@ This project is a web-based application that allows users to perform causal anal
     pip install -r requirements.txt
     ```
 
-### Running the Application
+### Running the Application in Flask
 
 1.  **Start the Flask server:**
     ```bash
@@ -60,14 +61,24 @@ This project is a web-based application that allows users to perform causal anal
     [http://127.0.0.1:5000](http://127.0.0.1:5000)
     ```
 
-##  kullanım
+1.  **Start the Flask server:**
+    ```bash
+    streamlit run streamlit_app.py
+    ```
+
+2.  **Open your web browser and navigate to:**
+    ```
+    (http://localhost:8501)
+    ```
+
+##  Pages
 
 1.  **Upload Data**: Go to the "Data Upload" page and upload your CSV file, or click "Use Sample Data".
 2.  **Analyze**: Go to the "Query Analysis" page and enter a business question in the text area.
 3.  **View Results**: Once the analysis is complete, you will be redirected to the "Results Dashboard" to view the detailed insights.
 4.  **Settings**: You can configure advanced settings on the "Advanced Settings" page.
 
-## 📁 File Structure
+##  File Structure
 
 ```
 .
@@ -92,6 +103,7 @@ This project is a web-based application that allows users to perform causal anal
 ```
 
 * `flask_app.py`: The main Flask application file.
+* `streamlit_app.py`: The main Streamlit application file.
 * `causal_engine.py`: Contains the core logic for the causal analysis.
 * `causal_workflow.py`: Defines the causal analysis workflow using state graphs.
 * `data/`: Contains the sample data and data dictionary.
